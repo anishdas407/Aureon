@@ -1,6 +1,6 @@
 plugins {
-    id("com.android.application") version "8.6.1"
-    id("org.jetbrains.kotlin.android") version "1.9.24"
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -57,6 +57,6 @@ dependencies {
     implementation("androidx.palette:palette-ktx:1.0.0")
     implementation("androidx.navigation:navigation-compose:2.8.2")
     
-    // Kyant Backdrop for Liquid Glass (Same as LastWave)
+    // Kyant Backdrop for Liquid Glass
     implementation("io.github.kyant0:backdrop:2.0.0")
 }
