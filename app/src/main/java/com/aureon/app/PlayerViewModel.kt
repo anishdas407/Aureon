@@ -18,9 +18,7 @@ import kotlinx.coroutines.launch
 
 class PlayerViewModel(app: Application) : AndroidViewModel(app) {
 
-    private val player: ExoPlayer = ExoPlayer.Builder(app).build().apply {
-        gaplessPlaybackEnabled = true
-    }
+    private val player: ExoPlayer = ExoPlayer.Builder(app).build()
 
     private val _tracks = MutableStateFlow<List<Track>>(emptyList())
     val tracks: StateFlow<List<Track>> = _tracks
