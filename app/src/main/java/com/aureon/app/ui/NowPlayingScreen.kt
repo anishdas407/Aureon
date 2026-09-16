@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
@@ -22,16 +23,16 @@ import com.aureon.app.ui.components.LyricAnimationStyle
 @Composable
 fun NowPlayingScreen(
     viewModel: PlayerViewModel,
+    trackId: Long?,
     onBack: () -> Unit
 ) {
-    val track by viewModel.currentTrack.collectAsState()
+    val currentTrack by viewModel.currentTrack.collectAsState()
     val isPlaying by viewModel.isPlaying.collectAsState()
     val position by viewModel.position.collectAsState()
     val duration by viewModel.duration.collectAsState()
     val lyrics by viewModel.lyrics.collectAsState()
     val albumColors by viewModel.albumColors.collectAsState()
 
-    // Create gradient directly - NO remember
     val primaryColor = albumColors?.primary ?: 0xFF6200EE.toInt()
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
@@ -46,81 +47,104 @@ fun NowPlayingScreen(
             .background(backgroundGradient)
             .padding(16.dp)
     ) {
-        TextButton(onClick = onBack) {
-            Text("← Back", color = MaterialTheme.colorScheme.onBackground)
+        IconButton(onClick = onBack) {
+            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
         }
 
-        track?.let { t ->
+        currentTrack?.let { track ->
+            Spacer(Modifier.height(24.dp))
+            
+            // Album art placeholder
+            GlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp),
+                cornerRadius = 16.dp
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = track.title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
+
             Text(
-                text = t.title,
+                text = track.title,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = t.artist,
+                text = track.artist,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
-            Spacer(Modifier.height(16.dp))
-        }
 
-        GlassCard(
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            cornerRadius = 32.dp
-        ) {
-            if (lyrics.isEmpty()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        "No lyrics found.\nPlace a .lrc file next to your audio file.",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.bodyLarge
+            Spacer(Modifier.height(24.dp))
+
+            GlassCard(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                cornerRadius = 24.dp
+            ) {
+                if (lyrics.isEmpty()) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            "No lyrics found",
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                } else {
+                    KineticLyrics(
+                        lyrics = lyrics,
+                        currentPositionMs = position,
+                        animationStyle = LyricAnimationStyle.APPLE_FLUID
                     )
                 }
-            } else {
-                KineticLyrics(
-                    lyrics = lyrics,
-                    currentPositionMs = position,
-                    animationStyle = LyricAnimationStyle.APPLE_FLUID
-                )
             }
-        }
 
-        Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(20.dp))
 
-        Slider(
-            value = if (duration > 0) position.toFloat() / duration.toFloat() else 0f,
-            onValueChange = { fraction ->
-                viewModel.seekTo((fraction * duration).toLong())
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary
+            Slider(
+                value = if (duration > 0) position.toFloat() / duration.toFloat() else 0f,
+                onValueChange = { fraction ->
+                    viewModel.seekTo((fraction * duration).toLong())
+                },
+                modifier = Modifier.fillMaxWidth()
             )
-        )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(formatTime(position), style = MaterialTheme.typography.bodySmall)
-            Text(formatTime(duration), style = MaterialTheme.typography.bodySmall)
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            FilledIconButton(
-                onClick = { viewModel.togglePlayPause() },
-                modifier = Modifier.size(80.dp),
-                shape = RoundedCornerShape(28.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp)
-                )
+                Text(formatTime(position), style = MaterialTheme.typography.bodySmall)
+                Text(formatTime(duration), style = MaterialTheme.typography.bodySmall)
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                FilledIconButton(
+                    onClick = { viewModel.togglePlayPause() },
+                    modifier = Modifier.size(72.dp),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
             }
         }
     }
