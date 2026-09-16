@@ -31,22 +31,14 @@ fun NowPlayingScreen(
     val lyrics by viewModel.lyrics.collectAsState()
     val albumColors by viewModel.albumColors.collectAsState()
 
-    // Calculate gradient outside of remember
-    val backgroundGradient = if (albumColors != null) {
-        Brush.verticalGradient(
-            colors = listOf(
-                Color(albumColors!!.primary).copy(alpha = 0.3f),
-                MaterialTheme.colorScheme.background
-            )
+    // Create gradient directly - NO remember
+    val primaryColor = albumColors?.primary ?: 0xFF6200EE.toInt()
+    val backgroundGradient = Brush.verticalGradient(
+        colors = listOf(
+            Color(primaryColor).copy(alpha = 0.3f),
+            MaterialTheme.colorScheme.background
         )
-    } else {
-        Brush.verticalGradient(
-            colors = listOf(
-                MaterialTheme.colorScheme.primaryContainer,
-                MaterialTheme.colorScheme.background
-            )
-        )
-    }
+    )
 
     Column(
         modifier = Modifier
